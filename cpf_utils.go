@@ -4,63 +4,68 @@ import (
 	"strconv"
 )
 
-func validaCPF(cpf string) bool {
-    var digitos_iguais int = 1;
-    var i int;
 
-    if len(cpf) < 11 {
-    	return false;
-    }
+func ValidaCPF(cpf string) error {
+	cpf = strings.Replace(cpf, ".", "", -1)
+	cpf = strings.Replace(cpf, "-", "", -1)
 
-    for i := 0; i < len(cpf) - 1; i++ {
-		if (cpf[i] != cpf[i + 1])
-        {
-            digitos_iguais := 0;
-        	break;
-        }
+	if len(cpf) != 11 {
+		return errors.New("CPF inválido")
 	}
 
-	var numeros, digitos string;
+	var eq bool
+	var dig string
 
-	var soma, resultado int;
 
-	if digitos_iguais == 0 {
-		numeros := cpf[0:9];
-		digitos := cpf[9];
-		soma := 0;
-		for i := 10; i>1; i-- {
-			soma += strconv.Atoi(numeros[10 - i]) * i;
+	for _, val := range cpf {
+		if len(dig) == 0 {
+			dig = string(val)
 		}
-
-		if soma % 11 < 2 {
-			resultado := 0;
-		} 
-		else {
-			resultado := 11 - (soma % 11);
+		if string(val) == dig {
+			eq = true
+			continue
 		}
-
-		if resultado != digitos[0]) {
-			return false;
-		}
-
-		numeros := cpf[0:10];
-		soma := 0;
-
-		for i := 11; i > 1; i--{
-			soma := soma + strconv.Atoi(numeros[11 - i) * i;
-		}  
-		if soma % 11 < 2 {
-			resultado := 0;
-		} 
-		else {
-			resultado := 11 - (soma % 11);
-		}
-		if resultado != strconv.Atoi(digitos[1]) {
-			return false;
-		}
-        
-        return true;
+		eq = false
+		break
 	}
 
-	return false;
+	if eq {
+		return errors.New("CPF inválido")
+	}
+
+	i := 10
+	sum := 0
+	for index := 0; index < len(cpf)-2; index++ {
+		pos, _ := strconv.Atoi(string(cpf[index]))
+		sum += pos * i
+		i--
+	}
+
+	prod := sum * 10
+	mod := prod % 11
+	if mod == 10 {
+		mod = 0
+	}
+	digit1, _ := strconv.Atoi(string(cpf[9]))
+	if mod != digit1 {
+		return errors.New("CPF inválido")
+	}
+
+	i = 11
+	sum = 0
+	for index := 0; index < len(cpf)-1; index++ {
+		pos, _ := strconv.Atoi(string(cpf[index]))
+		sum += pos * i
+		i--
+	}
+	prod = sum * 10
+	mod = prod % 11
+	if mod == 10 {
+		mod = 0
+	}
+	digit2, _ := strconv.Atoi(string(cpf[10]))
+	if mod != digit2 {
+		return errors.New("CPF inválido")
+	}
+	return nil
 }
