@@ -1,18 +1,96 @@
 package gmailutils
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	gmail "google.golang.org/api/gmail/v1"
 )
 
+// EmailTexto - estrutura para envio de emails de texto simples
+type EmailTexto struct {
+	From    string
+	TO      []string
+	Subject string
+	Body    string
+}
+
+func montaMensagemEmailTexto(email EmailTexto) ([]byte, error) {
+
+	if len(email.TO) <= 0 {
+		return nil, errors.New("Falta email de destino")
+	}
+
+	var messageStr = "From: " + email.From + "\r\n"
+
+	messageStr += "TO: "
+
+	for index, value := range email.TO {
+		messageStr += value
+		if index < (len(email.TO) - 1) {
+			messageStr += ","
+		}
+	}
+	messageStr += "\r\n"
+
+	messageStr += "Subject: " + email.Subject + "\r\n\r\n"
+
+	messageStr += email.Body
+
+	return []byte(messageStr), nil
+}
+
+// EnviaEmailTexto - Envia um email de texto simples
+func EnviaEmailTexto(email EmailTexto) {
+
+	messageStr, err := montaMensagemEmailTexto(email)
+
+	if err != nil {
+		log.Printf("Error: %v", err)
+		return
+	}
+
+	b, err := ioutil.ReadFile("client_secret.json")
+	if err != nil {
+		log.Fatalf("Unable to read client secret file: %v", err)
+	}
+
+	// If modifying these scopes, delete your previously saved client_secret.json.
+	config, err := google.ConfigFromJSON(b, gmail.GmailSendScope)
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+
+	srv, err := gmail.New(getClient(config))
+	if err != nil {
+		log.Fatalf("Unable to retrieve Gmail client: %v", err)
+	}
+
+	var message gmail.Message
+
+	// Place messageStr into message.Raw in base64 encoded format
+	message.Raw = base64.URLEncoding.EncodeToString(messageStr)
+
+	// Send the message
+	_, err = srv.Users.Messages.Send("me", &message).Do()
+	if err != nil {
+		log.Printf("Error: %v", err)
+	} else {
+		fmt.Println("Message sent!")
+	}
+}
+
 // GetClient - Retrieve a token, saves the token, then returns the generated client.
-func GetClient(config *oauth2.Config) *http.Client {
+func getClient(config *oauth2.Config) *http.Client {
 	tokFile := "token.json"
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
