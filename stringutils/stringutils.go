@@ -1,5 +1,5 @@
 // O pacote Dreambridge_utils contém funções úteis para várias coisas diversas
-package dreambridge_utils
+package stringutils
 
 // Reverse returns its argument string reversed rune-wise left to right.
 func Reverse(s string) string {

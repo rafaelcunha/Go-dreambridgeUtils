@@ -1,11 +1,10 @@
-package dreambridge_utils
+package cpfutils
 
 import (
 	"errors"
 	"strconv"
 	"strings"
 )
-
 
 func ValidaCPF(cpf string) error {
 	cpf = strings.Replace(cpf, ".", "", -1)
@@ -17,7 +16,6 @@ func ValidaCPF(cpf string) error {
 
 	var eq bool
 	var dig string
-
 
 	for _, val := range cpf {
 		if len(dig) == 0 {
