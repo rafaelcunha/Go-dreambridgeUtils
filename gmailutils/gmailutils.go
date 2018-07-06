@@ -50,6 +50,47 @@ func montaMensagemEmailTexto(email EmailTexto) ([]byte, error) {
 }
 
 // EnviaEmailTexto - Envia um email de texto simples
+func EnviaEmailHTML(email EmailTexto) {
+
+	messageStr, err := montaMensagemEmailTexto(email)
+
+	if err != nil {
+		log.Printf("Error: %v", err)
+		return
+	}
+
+	b, err := ioutil.ReadFile("client_secret.json")
+	if err != nil {
+		log.Fatalf("Unable to read client secret file: %v", err)
+	}
+
+	// If modifying these scopes, delete your previously saved client_secret.json.
+	config, err := google.ConfigFromJSON(b, gmail.GmailSendScope)
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+
+	srv, err := gmail.New(getClient(config))
+	if err != nil {
+		log.Fatalf("Unable to retrieve Gmail client: %v", err)
+	}
+
+	var message gmail.Message
+
+	// Place messageStr into message.Raw in base64 encoded format
+	base64
+	message.Raw = base64.URLEncoding.EncodeToString(messageStr)
+
+	// Send the message
+	_, err = srv.Users.Messages.Send("me", &message).Do()
+	if err != nil {
+		log.Printf("Error: %v", err)
+	} else {
+		fmt.Println("Message sent!")
+	}
+}
+
+// EnviaEmailTexto - Envia um email de texto simples
 func EnviaEmailTexto(email EmailTexto) {
 
 	messageStr, err := montaMensagemEmailTexto(email)
