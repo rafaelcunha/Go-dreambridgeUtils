@@ -49,8 +49,8 @@ func montaMensagemEmailTexto(email EmailTexto) ([]byte, error) {
 	return []byte(messageStr), nil
 }
 
-// EnviaEmailTexto - Envia um email de texto simples
-func EnviaEmailHTML(email EmailTexto) {
+// EnviaEmailHTML - Envia um email de texto simples
+/*func EnviaEmailHTML(email EmailTexto) {
 
 	messageStr, err := montaMensagemEmailTexto(email)
 
@@ -78,7 +78,6 @@ func EnviaEmailHTML(email EmailTexto) {
 	var message gmail.Message
 
 	// Place messageStr into message.Raw in base64 encoded format
-	base64
 	message.Raw = base64.URLEncoding.EncodeToString(messageStr)
 
 	// Send the message
@@ -88,7 +87,7 @@ func EnviaEmailHTML(email EmailTexto) {
 	} else {
 		fmt.Println("Message sent!")
 	}
-}
+}*/
 
 // EnviaEmailTexto - Envia um email de texto simples
 func EnviaEmailTexto(email EmailTexto) {

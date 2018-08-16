@@ -1,7 +1,9 @@
 package cpfutils
 
 import (
+	"log"
 	"math/rand"
+	"regexp"
 	"strconv"
 )
 
@@ -184,4 +186,54 @@ func StringToCPF(cpfStr string) *CPF {
 		return cpf
 	}
 	return nil
+}
+
+// CPFToInt64 - Recebe um CPF e converte para um inteiro
+func CPFToInt64(cpf *CPF) int64 {
+	var cpfInt int64
+
+	for _, numCPF := range cpf.CpfDigito {
+		cpfInt = (cpfInt)<<1 + int64(numCPF)
+	}
+
+	return cpfInt
+}
+
+// LimpaStringCPF - Retorna uma string contendo apenas os núemros do CPF
+func LimpaStringCPF(cpf string) (string, error) {
+	reg, err := regexp.Compile("[^0-9]+")
+	if err != nil {
+		log.Println("LimpaStringCPF - Erro ao limpar string de cpf.")
+		log.Println("Erro: ", err)
+		return "", err
+	}
+	apenasNumeros := reg.ReplaceAllString(cpf, "")
+
+	return apenasNumeros, nil
+}
+
+// CpfStrToInt64 - Converserte uma string de CPF para um inteiro
+func CpfStrToInt64(cpfSTR string) (int64, error) {
+
+	stringLimpa, err := LimpaStringCPF(cpfSTR)
+
+	if err != nil {
+		log.Println("CpfStrToInt64 - Falha ao limpar string de cpf.")
+		return 0, err
+	}
+
+	var cpf int64
+
+	for _, dig := range stringLimpa {
+		valDig, err := strconv.Atoi(string(dig))
+
+		if err != nil {
+			log.Println("CpfStrToInt64 - Falha ao converter valor do digito.")
+			return 0, err
+		}
+
+		cpf = (cpf * 10) + int64(valDig)
+	}
+
+	return cpf, nil
 }
