@@ -2,10 +2,8 @@ package mariadb
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"time"
 
@@ -16,99 +14,68 @@ import (
 const MaxConnections int = 2
 
 // IdleTimeMinutes - Tempo em minutos para manter conexões aberta no estado IDLE
-const IdleTimeMinutes int = 5
+const IdleTimeMinutes int = 10
 
-// ConfiguracaoServidor - Estrutura contendo a configuração para acesso ao servidor de DB
-type ConfiguracaoServidor struct {
-	Usuario string `json:"usuario"`
-	Senha   string `json:"senha"`
-	URL     string `json:"url"`
-	Porta   string `json:"porta"`
-	NomeDB  string `json:"dbnome"`
-	DB      *sql.DB
-}
-
-// CarregaConfiguracoes - Le os arquivos de configuração de conexão com a DB
-func carregaConfiguracoes(nomeArquivo string) (*ConfiguracaoServidor, error) {
-
-	var configuracao ConfiguracaoServidor
-
-	config, err := ioutil.ReadFile(nomeArquivo + ".json")
-
-	if err != nil {
-		log.Fatalf("Erro ao ler arquivo de configuração: %v", err)
-		return &configuracao, err
-	}
-	//fmt.Println("Arquivo de configuração lido: " + string(config))
-
-	err = json.Unmarshal(config, &configuracao)
-
-	if err != nil {
-		log.Fatalf("Erro ao ler informações do arquivo de configuração: %v", err)
-		return &configuracao, err
+func numConexoesAbertas(db *sql.DB) int {
+	if db == nil {
+		return 0
 	}
 
-	log.Println("Arquivo de configuração carregado com sucesso: ", configuracao)
+	dbStats := db.Stats()
 
-	return &configuracao, err
-}
-
-func montaURLConexao(configuracao *ConfiguracaoServidor) string {
-	//formato da URL => user:password@tcp(127.0.0.1:3306)/database
-
-	if configuracao.URL == "localhost" || configuracao.URL == "127.0.0.1" {
-		return configuracao.Usuario + ":" + configuracao.Senha + "@tcp(:" + configuracao.Porta + ")/" + configuracao.NomeDB
-	}
-
-	return configuracao.Usuario + ":" + configuracao.Senha + "@tcp(" + configuracao.URL + ":" + configuracao.Porta + ")/" + configuracao.NomeDB
-
+	return dbStats.OpenConnections
 }
 
 // InicializaDB - Realiza uma conexão com a base de dados e retorna a conexão.
-func inicializaDB(config *ConfiguracaoServidor) error {
-	var err error
-
-	config.DB, err = sql.Open("mysql", montaURLConexao(config))
+func inicializaDB(urlConexao string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", urlConexao)
 
 	if err != nil {
-		log.Fatalf("Erro ao abrir conexao com DB: %v", err)
-		return err
+		log.Fatalf("mariadb.inicializaDB - Erro ao abrir conexao com DB: %v", err)
+		return nil, err
 	}
 
-	config.DB.SetMaxIdleConns(MaxConnections)
-
-	config.DB.SetMaxOpenConns(MaxConnections)
+	db.SetMaxIdleConns(MaxConnections) // Número máximo de conexões abertas sem uso
+	db.SetMaxOpenConns(MaxConnections) // Número máximo de conexões abertas simultaneamente
 
 	var tempoDuracao = time.Minute * time.Duration(IdleTimeMinutes)
-	config.DB.SetConnMaxLifetime(tempoDuracao)
+	db.SetConnMaxLifetime(tempoDuracao) // Tempo máximo que uma conexão pode ser reutilizada. 0 = para sempre
 
-	if testaConexaoDB(config) == false {
-		err = errors.New("falha no teste de conexão com o DB")
-		//log.Fatalf("Falha testar conexao com DB.")
-		log.Printf("Falha testar conexao com DB.")
-		return err
+	err = testaConexaoDB(db)
+
+	if err != nil {
+		db = nil
+		log.Printf("mariadb.inicializaDB - Falha ao testar conexao com DB.")
+		return nil, err
 	}
 
-	//log.Println("Conexão realizada com sucesso.")
+	return db, nil
+}
+
+// TestaConexaoDB - Envia um PING para o DB verificar se a conexão está ok.
+func testaConexaoDB(db *sql.DB) error {
+
+	if db == nil {
+		return errors.New("mariadb.testaConexaoDB - Ponteiro para conexão com o DB nulo")
+	}
+
+	err := db.Ping()
+
+	if err != nil {
+		log.Println("mariadb.testaConexaoDB - Erro testar conexao com DB.")
+		return err
+	}
 
 	return nil
 }
 
-// TestaConexaoDB - Envia um PING para o DB verificar se a conexão está ok.
-func testaConexaoDB(config *ConfiguracaoServidor) bool {
-	err := config.DB.Ping()
-
-	if err != nil {
-		log.Printf("Erro testar conexao com DB: %v", err)
-		//log.Fatalf("Erro testar conexao com DB: %v", err)
-		return false
-	}
-
-	return true
-}
-
 // ListaTabelasDB - Testa a conexão com o banco de dados.
 func listaTabelasDB(db *sql.DB) error {
+
+	if db == nil {
+		return errors.New("mariadb.listaTabelasDB - Ponteiro para conexão com o DB nulo")
+	}
+
 	rows, err := db.Query("SHOW TABLES")
 
 	if err != nil {
@@ -127,6 +94,21 @@ func listaTabelasDB(db *sql.DB) error {
 	}
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
+		return err
+	}
+
+	return nil
+}
+
+func finalizaDB(db *sql.DB) error {
+	if db == nil {
+		return errors.New("mariadb.finalizaDB - Ponteiro para conexão com o DB nulo")
+	}
+	err := db.Close()
+	db = nil
+
+	if err != nil {
+		log.Println("mariadb.finalizaDB - Erro ao finalizar banco da dados.")
 		return err
 	}
 

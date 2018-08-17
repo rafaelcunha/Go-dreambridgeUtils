@@ -1,9 +1,10 @@
-// O pacote Dreambridge_utils contém funções úteis para várias coisas diversas
 package stringutils
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -35,4 +36,27 @@ func checkStringHash(str, hash string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// SeparaNomeSobrenome - Separa uma string de nome completo em nome e sobrenome. OBS: Não funciona para nome composto.
+func SeparaNomeSobrenome(nomeCompleto string) (string, string, error) {
+	var nome string
+	var sobrenome string
+
+	i := strings.Index(nomeCompleto, " ")
+
+	if i < 0 {
+		log.Println("stringutils.SeparaNomeSobrenome - O nome não contém sobrenome.")
+		nome = nomeCompleto
+		return nome, sobrenome, errors.New("stringutils.SeparaNomeSobrenome - O nome não contém sobrenome")
+	} else if i == 0 {
+		log.Println("stringutils.SeparaNomeSobrenome - Existe um espeço na primeira letra? A string está vazia?")
+		nome = nomeCompleto
+		return nome, sobrenome, errors.New("stringutils.SeparaNomeSobrenome - Existe um espeço na primeira letra? A string está vazia?")
+	} else {
+		nome = nomeCompleto[0:i]
+		sobrenome = nomeCompleto[(i + 1):len(nomeCompleto)]
+	}
+
+	return nome, sobrenome, nil
 }
