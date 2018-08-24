@@ -24,7 +24,7 @@ type EmailTexto struct {
 	Body    string
 }
 
-func montaMensagemEmailTexto(email EmailTexto) ([]byte, error) {
+func montaMensagemEmailTexto(email *EmailTexto) ([]byte, error) {
 
 	if len(email.TO) <= 0 {
 		return nil, errors.New("Falta email de destino")
@@ -90,29 +90,32 @@ func montaMensagemEmailTexto(email EmailTexto) ([]byte, error) {
 }*/
 
 // EnviaEmailTexto - Envia um email de texto simples
-func EnviaEmailTexto(email EmailTexto) {
+func EnviaEmailTexto(email *EmailTexto) error {
 
 	messageStr, err := montaMensagemEmailTexto(email)
 
 	if err != nil {
-		log.Printf("Error: %v", err)
-		return
+		log.Println("gmailutils.EnviaEmailTexto - falha ao montar mensagem.")
+		return err
 	}
 
-	b, err := ioutil.ReadFile("client_secret.json")
+	b, err := ioutil.ReadFile("credentials.json")
 	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+		log.Println("gmailutils.EnviaEmailTexto - falha ao ler arquivo dcredentials.json.")
+		return err
 	}
 
 	// If modifying these scopes, delete your previously saved client_secret.json.
 	config, err := google.ConfigFromJSON(b, gmail.GmailSendScope)
 	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
+		log.Println("gmailutils.EnviaEmailTexto - Unable to parse client secret file to config.")
+		return err
 	}
 
 	srv, err := gmail.New(getClient(config))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Gmail client: %v", err)
+		log.Println("gmailutils.EnviaEmailTexto - Unable to retrieve Gmail client.")
+		return err
 	}
 
 	var message gmail.Message
@@ -123,10 +126,11 @@ func EnviaEmailTexto(email EmailTexto) {
 	// Send the message
 	_, err = srv.Users.Messages.Send("me", &message).Do()
 	if err != nil {
-		log.Printf("Error: %v", err)
-	} else {
-		fmt.Println("Message sent!")
+		log.Println("gmailutils.EnviaEmailTexto - Erro ao enviar email.")
+		return err
 	}
+
+	return nil
 }
 
 // GetClient - Retrieve a token, saves the token, then returns the generated client.

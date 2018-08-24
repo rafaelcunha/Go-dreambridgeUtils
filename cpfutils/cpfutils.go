@@ -151,13 +151,53 @@ func GeradorCPF() *CPF {
 	return cpf
 }
 
-// CPFToString - Converte o CPF numérico em string formatada XXX.XXX.XXX.-XX
+// CPFToString - Converte o CPF numérico em string
 func CPFToString(cpf *CPF) string {
 	var cpfString string
+	var flagZeroEsquerda = true
 
 	cpfString = ""
 	for i := 0; i < NumDigitosCPF; i++ {
-		cpfString += strconv.Itoa(int(cpf.CpfDigito[i]))
+		valDigito := int(cpf.CpfDigito[i])
+
+		if flagZeroEsquerda {
+			if valDigito != 0 {
+				flagZeroEsquerda = false
+				cpfString += strconv.Itoa(valDigito)
+			}
+		} else {
+			cpfString += strconv.Itoa(valDigito)
+		}
+	}
+
+	return cpfString
+}
+
+// CPFToStringFormatada - Converte o CPF numérico em string formatada XXX.XXX.XXX-XX
+func CPFToStringFormatada(cpf *CPF) string {
+	var cpfString string
+	var flagZeroEsquerda = true
+
+	cpfString = ""
+	for i := 0; i < NumDigitosCPF; i++ {
+		valDigito := int(cpf.CpfDigito[i])
+
+		if flagZeroEsquerda {
+			if valDigito != 0 {
+				flagZeroEsquerda = false
+				cpfString += strconv.Itoa(valDigito)
+			}
+		} else {
+			cpfString += strconv.Itoa(valDigito)
+		}
+
+		if i == 2 || i == 5 {
+			cpfString += "."
+		}
+
+		if i == 8 {
+			cpfString += "-"
+		}
 	}
 
 	return cpfString

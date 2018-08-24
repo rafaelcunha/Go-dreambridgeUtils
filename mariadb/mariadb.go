@@ -11,20 +11,10 @@ import (
 )
 
 // MaxConnections - Número máximo de conexões abertas no DB
-const MaxConnections int = 2
+const MaxConnections int = 10
 
 // IdleTimeMinutes - Tempo em minutos para manter conexões aberta no estado IDLE
 const IdleTimeMinutes int = 10
-
-func numConexoesAbertas(db *sql.DB) int {
-	if db == nil {
-		return 0
-	}
-
-	dbStats := db.Stats()
-
-	return dbStats.OpenConnections
-}
 
 // InicializaDB - Realiza uma conexão com a base de dados e retorna a conexão.
 func inicializaDB(urlConexao string) (*sql.DB, error) {

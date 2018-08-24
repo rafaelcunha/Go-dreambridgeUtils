@@ -85,7 +85,7 @@ func InicializaDB() error {
 	return nil
 }
 
-// Finalizacao - Chama todas as finalizações necessárias
+// Finaliza - Chama todas as finalizações necessárias
 func Finaliza() {
 	finalizaDB(dbConf.DB)
 }
@@ -123,8 +123,8 @@ func ExecutaUpdateInsertDelete(query string, args ...interface{}) (*sql.Result, 
 	stmt, err := dbConf.DB.Prepare(query)
 
 	if err != nil {
-		log.Fatalf("ExecutaQuery - Erro ao preparar a query: " + query)
-		log.Fatalf("ExecutaQuery - Erro: %v", err)
+		log.Println("ExecutaQuery - Erro ao preparar a query: " + query)
+		log.Printf("ExecutaQuery - Erro: %v", err)
 		return nil, err
 	}
 	defer stmt.Close()
