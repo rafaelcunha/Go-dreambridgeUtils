@@ -87,6 +87,7 @@ func InicializaDB() error {
 
 // Finaliza - Chama todas as finalizações necessárias
 func Finaliza() {
+	//dbConf = nil
 	finalizaDB(dbConf.DB)
 }
 

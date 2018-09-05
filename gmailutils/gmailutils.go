@@ -20,6 +20,7 @@ import (
 type EmailTexto struct {
 	From    string
 	TO      []string
+	CCO     []string
 	Subject string
 	Body    string
 }
@@ -40,7 +41,21 @@ func montaMensagemEmailTexto(email *EmailTexto) ([]byte, error) {
 			messageStr += ","
 		}
 	}
+
 	messageStr += "\r\n"
+
+	if len(email.CCO) > 0 {
+		messageStr += "CCO: "
+
+		for index, value := range email.CCO {
+			messageStr += value
+			if index < (len(email.CCO) - 1) {
+				messageStr += ","
+			}
+		}
+	
+		messageStr += "\r\n"
+	}
 
 	messageStr += "Subject: " + email.Subject + "\r\n\r\n"
 

@@ -11,7 +11,7 @@ import (
 )
 
 // MaxConnections - Número máximo de conexões abertas no DB
-const MaxConnections int = 10
+var MaxConnections = 3
 
 // IdleTimeMinutes - Tempo em minutos para manter conexões aberta no estado IDLE
 const IdleTimeMinutes int = 10
