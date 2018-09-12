@@ -5,6 +5,11 @@ import (
 	"sync"
 )
 
+// InterfaceDadosConexao - Gerencia a conexão com um banco de dados MySQL/MariaDB
+type InterfaceDadosConexao interface {
+	GetURLConexao() string
+}
+
 // InterfaceConexaoMySQLDB - Gerencia a conexão com um banco de dados MySQL/MariaDB
 type InterfaceConexaoMySQLDB interface {
 	InicializaConexao() error
@@ -16,7 +21,7 @@ type InterfaceConexaoMySQLDB interface {
 
 // ConexaoMySQLDB - Estrutura de dados contendo informação sobre a conexão con o DB
 type ConexaoMySQLDB struct {
-	URLConexao string
-	DB         *sql.DB
-	mutex      sync.Mutex
+	DadosConexao InterfaceDadosConexao
+	DB           *sql.DB
+	mutex        sync.Mutex
 }

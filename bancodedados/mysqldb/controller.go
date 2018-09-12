@@ -39,9 +39,10 @@ func (conexaoDB *ConexaoMySQLDB) InicializaConexao() error {
 	conexaoDB.mutex.Lock()
 	defer conexaoDB.mutex.Unlock()
 
-	var err error
+	urlConexao := conexaoDB.DadosConexao.GetURLConexao()
 
-	conexaoDB.DB, err = sql.Open("mysql", conexaoDB.URLConexao)
+	var err error
+	conexaoDB.DB, err = sql.Open("mysql", urlConexao)
 
 	if err != nil {
 		log.Fatalf("mysqldb.ConexaoMySQLDB.InicializaConexao - Erro ao abrir conexao com DB.")

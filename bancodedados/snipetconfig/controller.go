@@ -6,8 +6,8 @@ import (
 	"github.com/mercadolibre/go-meli-toolkit/gomelipass"
 )
 
-// GetURLConcexao - Retorna a URL de conexão
-func (dadosConexao *DadosSnipetConexao) GetURLConcexao() string {
+// GetURLConexao - Retorna a URL de conexão
+func (dadosConexao *DadosSnipetConexao) GetURLConexao() string {
 	//formato da URL => user:password@tcp(127.0.0.1:3306)/database
 
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", dadosConexao.Usuario, dadosConexao.Senha, dadosConexao.URL, dadosConexao.NomeDB)

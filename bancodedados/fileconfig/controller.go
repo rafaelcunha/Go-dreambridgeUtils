@@ -6,8 +6,8 @@ import (
 	"log"
 )
 
-// GetURLConcexao - Retorna a URL de conexão
-func (dadosConexao *DadosArquivoConexao) GetURLConcexao() string {
+// GetURLConexao - Retorna a URL de conexão
+func (dadosConexao *DadosArquivoConexao) GetURLConexao() string {
 	//formato da URL => user:password@tcp(127.0.0.1:3306)/database
 
 	if dadosConexao.URL == "localhost" || dadosConexao.URL == "127.0.0.1" {
